@@ -9,6 +9,7 @@ require 'open3'
   Adopted Format:
     FLAC
     ALAC
+    WAVE
     MP3: lame 256kbps VBR
 =end
 
@@ -24,7 +25,7 @@ module MConvert
       FFMpegFlac.new.convert(*files)
     end
 
-    desc 'wave FILES', 'Convert Lossless files to Wave'
+    desc 'wave FILES', 'Convert Lossless files to WAVE'
     def wave(*files)
       FFMpegWave.new.convert(*files)
     end
