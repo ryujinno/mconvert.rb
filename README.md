@@ -1,24 +1,21 @@
 # Mconvert
 
-TODO: Write a gem description
+Lossless Music file converter
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Install as:
 
-    gem 'mconvert'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install mconvert
+    $ brew install ffmpeg mediainfo
+    $ gem install specific_install
+    $ gem specific_install ryujinno/mconvert.rb
 
 ## Usage
 
-TODO: Write usage instructions here
+    $ mconvert.rb alac LOSSLESS_FILES.wave ... # Convert lossless files to ALAC
+    $ mconvert.rb flac LOSSLESS_FILES.m4a  ... # Convert lossless files to FLAC
+    $ mconvert.rb mp3  LOSSLESS_FILES.m4a  ... # Convert lossless files to mp3 with lame
+    $ mconvert.rb wave LOSSLESS_FILES.m4a  ... # Convert lossless files to wave
 
 ## Contributing
 
