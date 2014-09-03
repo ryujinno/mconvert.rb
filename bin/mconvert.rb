@@ -13,7 +13,7 @@ require 'open3'
 =end
 
 module MConvert
-  class CLI < Thor
+  class Command < Thor
     desc 'alac FILES', 'Convert Lossless files to ALAC'
     def alac(*files)
       FFMpegAlac.new.convert(*files)
@@ -200,4 +200,4 @@ module MConvert
 
 end
 
-MConvert::CLI.start if __FILE__ == $0
+MConvert::Command.start
