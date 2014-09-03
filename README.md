@@ -12,10 +12,10 @@ Install as:
 
 ## Usage
 
-    $ mconvert.rb alac LOSSLESS_FILES.wave ... # Convert lossless files to ALAC
-    $ mconvert.rb flac LOSSLESS_FILES.m4a  ... # Convert lossless files to FLAC
-    $ mconvert.rb mp3  LOSSLESS_FILES.m4a  ... # Convert lossless files to mp3 with lame
-    $ mconvert.rb wave LOSSLESS_FILES.m4a  ... # Convert lossless files to wave
+    $ mconvert.rb alac LOSSLESS_FILES.wav ... # Convert lossless files to ALAC
+    $ mconvert.rb flac LOSSLESS_FILES.m4a ... # Convert lossless files to FLAC
+    $ mconvert.rb mp3  LOSSLESS_FILES.m4a ... # Convert lossless files to mp3 with lame
+    $ mconvert.rb wave LOSSLESS_FILES.m4a ... # Convert lossless files to WAVE
 
 ## Contributing
 
