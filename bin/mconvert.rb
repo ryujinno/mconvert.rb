@@ -46,7 +46,7 @@ module MConvert
 
     def destination_filename(source_filename)
       # Example to convert into flac file
-      #source_filename.gsub(/(\.\w+){1,2}$/, '.flac')
+      #source_filename.gsub(/\.\w+$/, '.flac')
     end
 
     def command_to_comvert(source_filename)
@@ -145,7 +145,7 @@ module MConvert
   class FFMpeg < Converter
     def destination_filename(source_filename)
       # Example to convert into flac file
-      #source_filename.gsub(/(\.\w+){1,2}$/, '.flac')
+      #source_filename.gsub(/\.\w+$/, '.flac')
     end
 
     def command_to_comvert(source_filename)
@@ -159,19 +159,19 @@ module MConvert
 
   class FFMpegFlac < FFMpeg
     def destination_filename(source_filename)
-      source_filename.gsub(/(\.\w+){1,2}$/, '.flac')
+      source_filename.gsub(/\.\w+$/, '.flac')
     end
   end
 
   class FFMpegWave < FFMpeg
     def destination_filename(source_filename)
-      source_filename.gsub(/(\.\w+){1,2}$/, '.wav')
+      source_filename.gsub(/\.\w+$/, '.wav')
     end
   end
 
   class FFMpegAlac < FFMpeg
     def destination_filename(source_filename)
-      source_filename.gsub(/(\.\w+){1,2}$/, '.m4a')
+      source_filename.gsub(/\.\w+$/, '.m4a')
     end
 
     def command_to_comvert(source_filename)
@@ -185,7 +185,7 @@ module MConvert
 
   class FFMpegMP3 < FFMpeg
     def destination_filename(source_filename)
-      source_filename.gsub(/\.\w+(\.m4a)?$/, '.mp3')
+      source_filename.gsub(/\.\w+$/, '.mp3')
     end
 
     def command_to_comvert(source_filename)
