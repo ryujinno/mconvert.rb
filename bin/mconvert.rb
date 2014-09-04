@@ -15,22 +15,22 @@ require 'open3'
 
 module MConvert
   class Command < Thor
-    desc 'alac LOSSLESS_FILES', 'Convert Lossless files to ALAC'
+    desc 'alac LOSSLESS_FILES', 'Convert lossless files to ALAC'
     def alac(*files)
       FFMpegAlac.new.convert(*files)
     end
 
-    desc 'flac LOSSLESS_FILES', 'Convert Lossless files to FLAC'
+    desc 'flac LOSSLESS_FILES', 'Convert lossless files to FLAC'
     def flac(*files)
       FFMpegFlac.new.convert(*files)
     end
 
-    desc 'wave LOSSLESS_FILES', 'Convert Lossless files to WAVE'
+    desc 'wave LOSSLESS_FILES', 'Convert lossless files to WAVE'
     def wave(*files)
       FFMpegWave.new.convert(*files)
     end
 
-    desc 'mp3 LOSSLESS_FILES', 'Convert Lossless files to mp3 with lame'
+    desc 'mp3 LOSSLESS_FILES', 'Convert lossless files to mp3 with lame'
     def mp3(*files)
       FFMpegMP3.new.convert(*files)
     end
