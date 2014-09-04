@@ -1,6 +1,6 @@
 # Mconvert
 
-Multithreaded lossless Music file converter
+Multithreaded lossless music file converter
 
 ## Installation
 
