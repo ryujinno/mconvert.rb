@@ -7,8 +7,8 @@ require 'open3'
 
 =begin
   Adopted Format:
-    FLAC
     ALAC
+    FLAC
     WAVE
     MP3: lame 256kbps VBR
 =end
