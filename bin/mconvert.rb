@@ -15,24 +15,26 @@ require 'open3'
 
 module MConvert
   class Command < Thor
+    class_option :jobs, aliases: 'j', type: :numeric, desc: 'Limit jobs under number of CPUs'
+
     desc 'alac LOSSLESS_FILES', 'Convert lossless files to ALAC'
     def alac(*files)
-      FFMpegAlac.new.convert(*files)
+      FFMpegAlac.new(options).convert(*files)
     end
 
     desc 'flac LOSSLESS_FILES', 'Convert lossless files to FLAC'
     def flac(*files)
-      FFMpegFlac.new.convert(*files)
+      FFMpegFlac.new(options).convert(*files)
     end
 
     desc 'wave LOSSLESS_FILES', 'Convert lossless files to WAVE'
     def wave(*files)
-      FFMpegWave.new.convert(*files)
+      FFMpegWave.new(options).convert(*files)
     end
 
     desc 'mp3 LOSSLESS_FILES', 'Convert lossless files to mp3 with lame'
     def mp3(*files)
-      FFMpegMP3.new.convert(*files)
+      FFMpegMP3.new(options).convert(*files)
     end
   end
 
@@ -58,30 +60,20 @@ module MConvert
       #]
     end
 
-    def initialize
+    def initialize(options)
       has_commands!
+
+      if options[:jobs].nil?
+        @jobs = n_cpus
+      else
+        @jobs = [n_cpus, options[:jobs]].min
+      end
     end
     
     def has_commands!(mandatory = REQUIRE_COMMANDS)
       mandatory.each do |command|
         Open3.popen3(ENV, 'which', command) do |stdin, out, err, th|
           abort("#{command} is required!") unless th.join.value.success?
-        end
-      end
-    end
-
-    def is_lossless!(*files)
-      files.each do |file|
-        lossless = false
-        IO.popen([ 'mediainfo', file ]) do |io|
-          io.each_line do |line|
-            codec = $~[1] if line =~ /Format\s*:\s*(.*)$/
-            lossless = LOSSLESS_CODECS.include?(codec) 
-            break if lossless
-          end
-          unless lossless
-            abort("Input file is not lossless format: #{file}")
-          end
         end
       end
     end
@@ -104,8 +96,29 @@ module MConvert
       end
     end
 
+    def convert(*source_files)
+      is_lossless!(*source_files)
+      concurrent(*source_files) { |source_filename| do_convert_command(source_filename) }
+    end
+
+    def is_lossless!(*files)
+      files.each do |file|
+        lossless = false
+        IO.popen([ 'mediainfo', file ]) do |io|
+          io.each_line do |line|
+            codec = $~[1] if line =~ /Format\s*:\s*(.*)$/
+            lossless = LOSSLESS_CODECS.include?(codec)
+            break if lossless
+          end
+          unless lossless
+            abort("Input file is not lossless format: #{file}")
+          end
+        end
+      end
+    end
+
     def concurrent(*files)
-      n_threads = n_cpus
+      n_threads = @jobs
       pool = ThreadsWait.new
       @monitor = Monitor.new
 
@@ -126,11 +139,6 @@ module MConvert
       end
     ensure
       pool.all_waits
-    end
-
-    def convert(*source_files)
-      is_lossless!(*source_files)
-      concurrent(*source_files) { |source_filename| do_convert_command(source_filename) }
     end
 
     def do_convert_command(source_filename)
