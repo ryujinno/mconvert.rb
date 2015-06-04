@@ -15,7 +15,7 @@ require 'open3'
 
 module MConvert
   class Command < Thor
-    class_option :jobs, aliases: 'j', type: :numeric, desc: 'Limit jobs under number of CPUs'
+    class_option :jobs, aliases: '-j', type: :numeric, desc: 'Limit jobs under number of CPUs'
 
     desc 'alac LOSSLESS_FILES', 'Convert lossless files to ALAC'
     def alac(*files)
@@ -39,7 +39,7 @@ module MConvert
   end
 
   class Converter
-    REQUIRE_COMMANDS = [ 'mediainfo', 'ffmpeg' ]
+    REQUIRED_COMMANDS = [ 'mediainfo', 'ffmpeg' ]
     
     LOSSLESS_CODECS = [
       'ALAC', 'FLAC', 'Wave',
@@ -68,9 +68,12 @@ module MConvert
       else
         @jobs = [n_cpus, options[:jobs]].min
       end
+      @jobs.freeze
+
+      @monitor = Monitor.new
     end
     
-    def has_commands!(mandatory = REQUIRE_COMMANDS)
+    def has_commands!(mandatory = REQUIRED_COMMANDS)
       mandatory.each do |command|
         Open3.popen3(ENV, 'which', command) do |stdin, out, err, th|
           abort("#{command} is required!") unless th.join.value.success?
@@ -117,19 +120,18 @@ module MConvert
       end
     end
 
-    def concurrent(files)
+    def concurrent(queue)
       n_threads = @jobs
       pool = ThreadsWait.new
-      @monitor = Monitor.new
 
-      files.each do |file|
+      queue.each do |q|
         unless pool.threads.length < n_threads
           pool.next_wait 
         end
 
-        thread = Thread.new(file) do |file|
+        thread = Thread.new(q) do |q|
           begin
-            yield(file)
+            yield(q)
           rescue => error
             puts error
           end
