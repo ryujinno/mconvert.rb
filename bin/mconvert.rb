@@ -76,7 +76,7 @@ module MConvert
     def has_commands!(mandatory = REQUIRED_COMMANDS)
       mandatory.each do |command|
         Open3.popen3(ENV, 'which', command) do |stdin, out, err, th|
-          abort("#{command} is required!") unless th.join.value.success?
+          raise("#{command} is required!") unless th.join.value.success?
         end
       end
     end
@@ -114,7 +114,7 @@ module MConvert
             break if lossless
           end
           unless lossless
-            abort("Input file is not lossless format: #{file}")
+            raise("Input file is not lossless format: #{file}")
           end
         end
       end
@@ -126,15 +126,11 @@ module MConvert
 
       queue.each do |q|
         unless pool.threads.length < n_threads
-          pool.next_wait 
+          pool.next_wait.join
         end
 
         thread = Thread.new(q) do |q|
-          begin
-            yield(q)
-          rescue => error
-            puts error
-          end
+          yield(q)
         end
 
         pool.join_nowait(thread)
@@ -147,7 +143,7 @@ module MConvert
       @monitor.synchronize { puts("Converting #{source_filename}") }
       suceeded = system(*command_to_comvert(source_filename))
       unless suceeded
-        abort("Failed to covnert: #{source_filename}")
+        raise "Cannot convert #{source_filename}"
       end
     end
   end
