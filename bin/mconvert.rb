@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'thor'
-require 'thwait'
-require 'monitor'
 require 'open3'
 
 =begin
@@ -72,23 +70,21 @@ module MConvert
     end
 
     def concurrent(n_processes, queue, *args)
-      pool = ThreadsWait.new
+      pool = []
 
       queue.each_with_index do |q, i|
-        if pool.threads.size >= n_processes
-          # Join can raise error in thread
-          pool.next_wait.join
+        unless pool.size < n_processes
+          pid = Process.wait
+          pool.delete(pid)
         end
 
-        thread = Thread.new(q, i, *args) do |q, i, *args|
+        pool << Process.fork do
           yield(q, i, *args)
         end
-
-        pool.join_nowait(thread)
       end
 
     ensure
-      pool.all_waits
+      Process.waitall
     end
 
   end
@@ -121,8 +117,6 @@ module MConvert
     def initialize(options)
       @jobs = get_jobs(options[:jobs])
       @jobs.freeze
-
-      @monitor = Monitor.new
     end
     
     def convert(source_files)
@@ -159,8 +153,8 @@ module MConvert
     end
 
     def do_convert_command(source_filename)
-      @monitor.synchronize { puts("Converting: #{source_filename}") }
-      suceeded = system(*command_to_comvert(source_filename))
+      puts("Converting: #{source_filename}")
+      suceeded = exec(*command_to_comvert(source_filename))
       unless suceeded
         raise "Cannot convert #{source_filename}"
       end
