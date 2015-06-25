@@ -14,7 +14,8 @@ require 'open3'
 =end
 
 module MConvert
-  class Command < Thor
+  class CLI < Thor
+
     class_option :jobs, aliases: '-j', type: :numeric, desc: 'Limit jobs under number of CPUs'
 
     desc 'alac LOSSLESS_FILES', 'Convert lossless files to ALAC'
@@ -36,9 +37,66 @@ module MConvert
     def mp3(*files)
       FFMpegMP3.new(options).convert(files)
     end
+
+  end
+
+  module MultiThread
+
+    def get_jobs(option)
+      if option.nil?
+        jobs = n_cpus
+      else
+        jobs = [n_cpus, option].min
+      end
+
+      jobs
+    end
+
+    def n_cpus
+      if RUBY_PLATFORM.include?('-linux')
+        processor = 0
+        IO.foreach('/proc/cpuinfo') do |line|
+          match = line.match(/^processor\s*:\s*(\d)$/)
+          unless match.nil?
+            processor = match[1].to_i
+          end
+        end
+        processor + 1 # CPU # starts from 0
+
+      elsif RUBY_PLATFORM.include?('-darwin')
+        `sysctl -n hw.ncpu`.strip.to_i
+
+      else
+        1
+      end
+    end
+
+    def concurrent(n_processes, queue, *args)
+      pool = ThreadsWait.new
+
+      queue.each_with_index do |q, i|
+        if pool.threads.size >= n_processes
+          # Join can raise error in thread
+          pool.next_wait.join
+        end
+
+        thread = Thread.new(q, i, *args) do |q, i, *args|
+          yield(q, i, *args)
+        end
+
+        pool.join_nowait(thread)
+      end
+
+    ensure
+      pool.all_waits
+    end
+
   end
 
   class Converter
+
+    include MultiThread
+
     REQUIRED_COMMANDS = [ 'mediainfo', 'ffmpeg' ]
     
     LOSSLESS_CODECS = [
@@ -61,47 +119,27 @@ module MConvert
     end
 
     def initialize(options)
-      has_commands!
-
-      if options[:jobs].nil?
-        @jobs = n_cpus
-      else
-        @jobs = [n_cpus, options[:jobs]].min
-      end
+      @jobs = get_jobs(options[:jobs])
       @jobs.freeze
 
       @monitor = Monitor.new
     end
     
+    def convert(source_files)
+      has_commands!
+      is_lossless!(source_files)
+
+      concurrent(@jobs, source_files) do |source_filename, i|
+        do_convert_command(source_filename)
+      end
+    end
+
     def has_commands!(mandatory = REQUIRED_COMMANDS)
       mandatory.each do |command|
         Open3.popen3(ENV, 'which', command) do |stdin, out, err, th|
           raise("#{command} is required!") unless th.join.value.success?
         end
       end
-    end
-
-    def n_cpus
-      if RUBY_PLATFORM.include?('-linux')
-        processor = 0
-        IO.foreach('/proc/cpuinfo') do |line|
-          if line =~ /^processor\s*:\s*(\d)$/
-            processor = $~[1].to_i
-          end
-        end
-        processor + 1 # CPU # starts from 0
-
-      elsif RUBY_PLATFORM.include?('-darwin')
-        `sysctl -n hw.ncpu`.strip.to_i
-
-      else
-        1
-      end
-    end
-
-    def convert(source_files)
-      is_lossless!(source_files)
-      concurrent(source_files) { |source_filename| do_convert_command(source_filename) }
     end
 
     def is_lossless!(files)
@@ -120,35 +158,18 @@ module MConvert
       end
     end
 
-    def concurrent(queue)
-      n_threads = @jobs
-      pool = ThreadsWait.new
-
-      queue.each do |q|
-        unless pool.threads.length < n_threads
-          pool.next_wait.join
-        end
-
-        thread = Thread.new(q) do |q|
-          yield(q)
-        end
-
-        pool.join_nowait(thread)
-      end
-    ensure
-      pool.all_waits
-    end
-
     def do_convert_command(source_filename)
-      @monitor.synchronize { puts("Converting #{source_filename}") }
+      @monitor.synchronize { puts("Converting: #{source_filename}") }
       suceeded = system(*command_to_comvert(source_filename))
       unless suceeded
         raise "Cannot convert #{source_filename}"
       end
     end
+
   end
 
   class FFMpeg < Converter
+
     def destination_filename(source_filename)
       # Example to convert into flac file
       #source_filename.gsub(/\.\w+$/, '.flac')
@@ -161,21 +182,27 @@ module MConvert
         '-vn', destination_filename(source_filename)
       ]
     end
+
   end
 
   class FFMpegFlac < FFMpeg
+
     def destination_filename(source_filename)
       source_filename.gsub(/\.\w+$/, '.flac')
     end
+
   end
 
   class FFMpegWave < FFMpeg
+
     def destination_filename(source_filename)
       source_filename.gsub(/\.\w+$/, '.wav')
     end
+
   end
 
   class FFMpegAlac < FFMpeg
+
     def destination_filename(source_filename)
       source_filename.gsub(/\.\w+$/, '.m4a')
     end
@@ -187,9 +214,11 @@ module MConvert
         '-vn', '-acodec', 'alac', destination_filename(source_filename)
       ]
     end
+
   end
 
   class FFMpegMP3 < FFMpeg
+
     def destination_filename(source_filename)
       source_filename.gsub(/\.\w+$/, '.mp3')
     end
@@ -203,8 +232,9 @@ module MConvert
         destination_filename(source_filename)
       ]
     end
+
   end
 
 end
 
-MConvert::Command.start
+MConvert::CLI.start
