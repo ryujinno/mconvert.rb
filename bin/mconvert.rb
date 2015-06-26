@@ -70,22 +70,39 @@ module MConvert
     end
 
     def concurrent(n_processes, queue, *args)
-      pool = []
+      pool = {}
 
       queue.each_with_index do |q, i|
         unless pool.size < n_processes
-          pid = Process.wait
+          pid, status = Process.wait2
+          unless status.success?
+            process_failed_middle(pool[pid])
+          end
+
           pool.delete(pid)
         end
 
-        pool << Process.fork do
+        pid = Process.fork do
           yield(q, i, *args)
         end
+
+        pool[pid] = { queue: q, index: i }
       end
 
     ensure
-      Process.waitall
+      Process.waitall.each do |pid, status|
+        unless status.success?
+          process_failed_end(pool[pid])
+        end
+      end
     end
+
+    def process_failed(failed)
+      raise "Process ##{failed[:index]} failed: #{failed[:queue]}"
+    end
+
+    alias :process_failed_middle :process_failed
+    alias :process_failed_end    :process_failed
 
   end
 
@@ -231,4 +248,4 @@ module MConvert
 
 end
 
-MConvert::CLI.start
+MConvert::CLI.start unless File.basename($0) == 'rspec'
