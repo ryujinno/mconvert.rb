@@ -155,18 +155,28 @@ module MConvert
 
     def is_lossless!(files)
       files.each do |file|
-        lossless = false
+        codecs = []
+
         IO.popen([ 'mediainfo', file ]) do |io|
-          io.each_line do |line|
-            codec = $~[1] if line =~ /Format\s*:\s*(.*)$/
-            lossless = LOSSLESS_CODECS.include?(codec)
-            break if lossless
-          end
-          unless lossless
-            raise("Input file is not lossless format: #{file}")
-          end
+          codecs = get_codecs(io)
+        end
+
+        lossless = LOSSLESS_CODECS & codecs
+        if lossless.empty?
+          raise("Input file is not lossless format: #{file}")
         end
       end
+    end
+
+    def get_codecs(io)
+      codecs = []
+
+      io.each do |line|
+        match = line.match(/Format\s*:\s*(.*)$/)
+        codecs << match[1] unless match.nil?
+      end
+
+      codecs
     end
 
     def do_convert_command(source_filename)
