@@ -55,9 +55,7 @@ module MConvert
         processor = 0
         IO.foreach('/proc/cpuinfo') do |line|
           match = line.match(/^processor\s*:\s*(\d)$/)
-          unless match.nil?
-            processor = match[1].to_i
-          end
+          processor = match[1].to_i unless match.nil?
         end
         processor + 1 # CPU # starts from 0
 
