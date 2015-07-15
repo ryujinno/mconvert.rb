@@ -71,7 +71,7 @@ module MConvert
       pool = {}
 
       queue.each_with_index do |q, i|
-        unless pool.size < n_processes
+        while pool.size >= n_processes do
           pid, status = Process.wait2
           unless status.success?
             process_failed_middle(pool[pid])
