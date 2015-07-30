@@ -20,9 +20,9 @@ module MConvert
       end
 
       context 'with command not installed' do
-        it 'should raise error' do
+        it 'should raise runtime error' do
           commands = [ 'not_instailed_command' ]
-          expect { @ffmpeg.has_commands!(commands) }.to raise_error
+          expect { @ffmpeg.has_commands!(commands) }.to raise_error(RuntimeError)
         end
       end
 
