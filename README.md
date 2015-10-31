@@ -1,21 +1,40 @@
 # Mconvert
 
-Multi-processed lossless music file converter
+Multi-processed lossless music file converter.
 
 ## Installation
 
-Install as:
+### Install dependant commands
+
+For Mac OS X:
 
     $ brew install ffmpeg mediainfo
-    $ gem install specific_install
-    $ gem specific_install ryujinno/mconvert.rb
+
+For Linux:
+
+    $ apt-get install ffmpeg mediainfo
+
+### Install with bundler
+
+Add following line to your Gemfile:
+
+    gem 'mconvert', git: 'https://github.com/ryujinno/mconvert.rb.git'
+
+Install gems and commands as:
+
+    $ bundle install --binstubs
 
 ## Usage
 
-    $ mconvert.rb alac LOSSLESS_FILES.wav ... # Convert lossless files to ALAC
-    $ mconvert.rb flac LOSSLESS_FILES.m4a ... # Convert lossless files to FLAC
-    $ mconvert.rb mp3  LOSSLESS_FILES.m4a ... # Convert lossless files to mp3 with lame
-    $ mconvert.rb wave LOSSLESS_FILES.m4a ... # Convert lossless files to WAVE
+    Commands:
+      mconvert alac LOSSLESS_FILES  # Convert lossless files to ALAC
+      mconvert flac LOSSLESS_FILES  # Convert lossless files to FLAC
+      mconvert help [COMMAND]       # Describe available commands or one specific command
+      mconvert mp3 LOSSLESS_FILES   # Convert lossless files to mp3 with lame
+      mconvert wave LOSSLESS_FILES  # Convert lossless files to WAVE
+
+    Options:
+      -j, [--jobs=N]  # Limit jobs under number of CPUs
 
 ## Contributing
 
