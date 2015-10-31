@@ -2,6 +2,7 @@
 *.rbc
 .bundle
 .config
+.rspec
 .yardoc
 Gemfile.lock
 InstalledFiles
@@ -20,3 +21,4 @@ tmp
 *.o
 *.a
 mkmf.log
+bin/
