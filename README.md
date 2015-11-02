@@ -18,7 +18,7 @@ For Linux:
 
 Add following line to your Gemfile:
 
-    gem 'mconvert', git: 'https://github.com/ryujinno/mconvert.rb.git'
+    gem 'mconvert', github: 'ryujinno/mconvert.rb'
 
 Install gems and commands as:
 
