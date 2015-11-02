@@ -20,7 +20,7 @@ $ apt-get install ffmpeg mediainfo
 
 ### Install with bundler
 
-Add following line to your `${HOME}/Gemfile`:
+Add the following line to your `${HOME}/Gemfile`:
 
 ```ruby
 gem 'mconvert', github: 'ryujinno/mconvert.rb'
