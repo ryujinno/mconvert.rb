@@ -1,0 +1,29 @@
+language: ruby
+
+dist: trusty
+sudo: required
+
+os:
+  - linux
+  - osx
+
+rvm:
+  - 2.0.0-p648
+  - 2.1.8
+  - 2.2.4
+  - 2.3.0
+  - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+
+before_install:
+  # https://github.com/travis-ci/travis-ci/issues/5578
+  - gem install bundler
+
+before_script:
+  - bundle update
+
+script:
+  - bundle exec rspec --color --format documentation
