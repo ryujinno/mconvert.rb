@@ -34,13 +34,24 @@ module MConvert
     end
 
     describe '#concurrent' do
+      before :all do
+        if File.executable?('/usr/bin/true')
+          # Gentoo, Mac OS X
+          BIN_TRUE  = '/usr/bin/true'
+          BIN_FALSE = '/usr/bin/false'
+        elsif File.executable?('/bin/true')
+          # Ubuntu
+          BIN_TRUE  = '/bin/true'
+          BIN_FALSE = '/bin/false'
+        end
+      end
 
       context 'against all processes succeeded' do
         it 'should not call #process_failed' do
           expect(@converter).to_not receive(:process_failed)
 
           @converter.concurrent(1, [ 0, 1, 2 ]) do
-            exec('/usr/bin/true')
+            exec(BIN_TRUE)
           end
         end
       end
@@ -50,7 +61,7 @@ module MConvert
           expect(@converter).to receive(:process_failed_end)
 
           @converter.concurrent(1, [ 0 ]) do
-            exec('/usr/bin/false')
+            exec(BIN_FALSE)
           end
         end
       end
@@ -61,9 +72,9 @@ module MConvert
 
           @converter.concurrent(1, [ 0, 1 ]) do |q, i|
             if q == 0
-              exec('/usr/bin/false')
+              exec(BIN_FALSE)
             else
-              exec('/usr/bin/true')
+              exec(BIN_TRUE)
             end
           end
         end
