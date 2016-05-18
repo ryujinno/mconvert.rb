@@ -1,5 +1,7 @@
 # MConvert
 
+[![Build Status](https://travis-ci.org/ryujinno/mconvert.rb.svg?branch=master)](https://travis-ci.org/ryujinno/mconvert.rb)
+
 Multi-processed lossless music file converter.
 
 ## Installation
