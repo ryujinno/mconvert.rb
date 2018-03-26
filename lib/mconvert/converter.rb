@@ -17,7 +17,7 @@ module MConvert
     include MultiProcess
 
     REQUIRED_COMMANDS = [ 'mediainfo', 'ffmpeg' ]
-    
+
     LOSSLESS_CODECS = [
       'ALAC', 'FLAC', 'Wave',
       # 'TAK', 'APE', 'TTA', 'WMA Lossless',
@@ -29,7 +29,7 @@ module MConvert
     end
 
     def command_to_comvert(source_filename)
-      # Example to convert with ffmpeg 
+      # Example to convert with ffmpeg
       #[
       #  'ffmpeg', '-y', '-loglevel', 'warning',
       #  '-i', source_filename,
@@ -41,7 +41,7 @@ module MConvert
       @jobs = get_jobs(options[:jobs])
       @jobs.freeze
     end
-    
+
     def convert(source_files)
       has_commands!
       is_lossless!(source_files)
@@ -104,9 +104,13 @@ module MConvert
 
     def command_to_comvert(source_filename)
       [
-        'ffmpeg', '-y', '-loglevel', 'warning',
+        'ffmpeg',
+        '-nostdin',
+        '-y',
+        '-loglevel', 'warning',
+        '-vn',
         '-i', source_filename,
-        '-vn', destination_filename(source_filename)
+        destination_filename(source_filename)
       ]
     end
 
@@ -152,10 +156,14 @@ module MConvert
 
     def command_to_comvert(source_filename)
       [
-        'ffmpeg', '-y', '-loglevel', 'warning',
-        '-i', source_filename,
+        'ffmpeg',
+        '-nostdin',
+        '-y',
+        '-loglevel', 'warning',
         '-vn',
-        '-acodec', 'libmp3lame', '-ab', '256k',
+        '-acodec', 'libmp3lame',
+        '-ab', '256k',
+        '-i', source_filename,
         destination_filename(source_filename)
       ]
     end
